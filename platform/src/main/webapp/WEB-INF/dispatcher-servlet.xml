@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation=" 
+           http://www.springframework.org/schema/beans 
+           http://www.springframework.org/schema/beans/spring-beans-3.2.xsd 
+           http://www.springframework.org/schema/context 
+           http://www.springframework.org/schema/context/spring-context-3.2.xsd
+           http://www.springframework.org/schema/mvc 
+           http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd" default-autowire="byName">
+	
+	<!-- 对web包中的指定类进行扫描，以完成启动扫描所有的controller -->
+	<context:component-scan base-package="com.chan.platform" use-default-filters="false">
+		<context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+	</context:component-scan>
+	
+    
+    <!-- 主要作用于@Controller,激活该模式  -->
+    <mvc:annotation-driven/>
+	
+	<!-- 对模型视图名称的解析，即在模型视图名称添加前后缀
+	     InternalResourceViewResolver默认的就是JstlView所以这里就不用配置viewClass了 
+	-->
+	<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix" value="/WEB-INF/views/" />
+		<property name="suffix" value=".jsp" />
+	</bean>
+	
+	<!-- 引入静态资源 -->
+	<mvc:resources mapping="/static/**" location="/static/" cache-period="31556926"/>
+	
+	<!-- 上传配置 -->
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="defaultEncoding">
+			<value>UTF-8</value>
+		</property>
+		<property name="maxUploadSize">
+			<value>32505856</value><!-- 上传文件大小限制为31M，31*1024*1024 -->
+		</property>
+		<property name="maxInMemorySize">
+			<value>4096</value>
+		</property>
+	</bean>
+		
+	<!-- 将无法mapping到Controller的path交给default servlet handler处理 -->
+	<mvc:default-servlet-handler/>
+	
+    <!-- 定义无Controller的path<->view直接映射 -->
+    <mvc:view-controller path="/" view-name="redirect:/index"/>
+    
+    <bean id="exceptionResolver" class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+	    <property name="defaultErrorView">
+	        <value>/error/404</value>
+	    </property>
+	    <property name="defaultStatusCode">
+	        <value>404</value>
+	    </property>
+		<property name="warnLogCategory">
+	        <value>org.springframework.web.servlet.handler.SimpleMappingExceptionResolver</value>
+	    </property>
+	    <property name="exceptionMappings">
+			<props>
+				<prop key="java.sql.SQLException">showDBError</prop>
+				<prop key="java.lang.RuntimeException">showError</prop>
+			</props>
+		</property>
+	</bean>
+</beans> 
